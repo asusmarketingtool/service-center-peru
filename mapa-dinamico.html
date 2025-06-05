@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mapa Dinámico del Centro de Servicio ASUS</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    label, input, button {
+      font-size: 1rem;
+    }
+    #map-container {
+      margin-top: 20px;
+    }
+    .centro {
+      margin-bottom: 40px;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .centro h2 {
+      margin-top: 0;
+    }
+    iframe {
+      width: 100%;
+      height: 300px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .info {
+      margin-top: 10px;
+      line-height: 1.4;
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Mapa Dinámico del Centro de Servicio ASUS</h1>
+
+  <!-- 1) Campo para que el usuario escriba la región -->
+  <div>
+    <label for="regionInput">Introduce la región:</label>
+    <input type="text" id="regionInput" placeholder="Ej: Áncash" />
+    <button id="btnBuscar">Buscar Mapa</button>
+  </div>
+
+  <!-- 2) Contenedor donde inyectaremos todos los centros y mapas -->
+  <div id="map-container"></div>
+
+  <script>
+    document.getElementById('btnBuscar').addEventListener('click', () => {
+      const region = document.getElementById('regionInput').value.trim();
+      const cont = document.getElementById('map-container');
+      cont.innerHTML = ''; // Limpiamos resultados anteriores
+
+      if (!region) {
+        cont.innerHTML = '<p class="error">Por favor ingresa una región válida.</p>';
+        return;
+      }
+
+      // Mostramos mensaje de carga
+      cont.innerHTML = '<p>Cargando información...</p>';
+
+      // Llamada a tu endpoint /nearest
+      fetch('https://service-center-peru.onrender.com/nearest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ region })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('No se encontró centro de servicio para la región: ' + region);
+        }
+        return response.json();
+      })
+      .then(data => {
+        // data.centers es un array con uno o varios centros
+        if (!data.centers || data.centers.length === 0) {
+          throw new Error('Sin centros de servicio en ' + region);
+        }
+
+        // Limpiamos mensaje de "Cargando..."
+        cont.innerHTML = '';
+
+        // Recorremos cada centro y creamos su bloque
+        data.centers.forEach((centro, index) => {
+          // Creamos un contenedor para este centro
+          const divCentro = document.createElement('div');
+          divCentro.className = 'centro';
+
+          // Título con nombre (y opcionalmente índice)
+          const titulo = document.createElement('h2');
+          titulo.textContent = `${centro.name} (${region})`;
+          divCentro.appendChild(titulo);
+
+          // Iframe del mapa
+          const iframe = document.createElement('iframe');
+          iframe.src = centro.mapUrl;
+          iframe.allowFullscreen = true;
+          iframe.loading = 'lazy';
+          divCentro.appendChild(iframe);
+
+          // Sección de información (dirección, productos, referencia)
+          const infoDiv = document.createElement('div');
+          infoDiv.className = 'info';
+          infoDiv.innerHTML = `
+            <p><strong>Dirección:</strong> ${centro.address}</p>
+            <p><strong>Productos:</strong> ${centro.products}</p>
+            ${centro.reference ? `<p><strong>Referencia:</strong> ${centro.reference}</p>` : ''}
+          `;
+          divCentro.appendChild(infoDiv);
+
+          // Lo agregamos al contenedor general
+          cont.appendChild(divCentro);
+        });
+      })
+      .catch(err => {
+        cont.innerHTML = '<p class="error">Error: ' + err.message + '</p>';
+      });
+    });
+
+    // Opcional: detectar región por parámetro en la URL
+    /*
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const reg = params.get('region');
+      if (reg) {
+        document.getElementById('regionInput').value = reg;
+        document.getElementById('btnBuscar').click();
+      }
+    });
+    */
+  </script>
+</body>
+</html>
