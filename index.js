@@ -193,8 +193,9 @@ app.post('/nearest', (req, res) => {
       address: sc.address,
       products: sc.products,
       ...(sc.reference ? { reference: sc.reference } : {}),
-      mapLink: `https://www.google.com/maps/dir/?api=1&destination=${encoded}`,
-      imageUrl: sc.imageUrl
+      mapLink:       `https://www.google.com/maps/dir/?api=1&destination=${encoded}`,
+      addressLink:   `https://www.google.com/maps/search/?api=1&query=${encoded}`,
+      imageUrl:      sc.imageUrl
     };
   });
 
