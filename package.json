@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "name": "service-center-api",
+=======
+  "name": "service-center-locator-pe",
+>>>>>>> 7fe32719f71c6b412f957c28c9dabeac3befa4fa
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -8,5 +12,13 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+<<<<<<< HEAD
   "description": ""
+=======
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  }
+>>>>>>> 7fe32719f71c6b412f957c28c9dabeac3befa4fa
 }
